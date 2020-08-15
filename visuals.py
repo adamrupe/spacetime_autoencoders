@@ -108,25 +108,25 @@ def diagram(field, ax=None, size=16, colorbar=False, y_min=0, y_max=None,
                 axis='both',
                 which='minor',
                 direction='out',
-                top='off',
-                right='off',
+                top=False,
+                right=False,
                 pad=8)
         ax.tick_params(
                 axis='both',
                 which='major',
-                top='off',
-                bottom='off',
-                left='off',
-                right='off')
+                top=False,
+                bottom=False,
+                left=False,
+                right=False)
     else:
         ax.tick_params(axis='both',
                         which='both',
-                        bottom='off',
-                        top='off',
-                        left='off',
-                        right='off',
-                        labelleft='off',
-                        labelbottom='off')
+                        bottom=False,
+                        top=False,
+                        left=False,
+                        right=False,
+                        labelleft=False,
+                        labelbottom=False)
     if return_pcolor:
         return im
     else:
@@ -513,25 +513,25 @@ def state_overlay_animate(data_fields, state_fields, ax=None, size=16, field_col
                 axis='both',
                 which='minor',
                 direction='out',
-                top='off',
-                right='off',
+                top=False,
+                right=False,
                 pad=8)
         ax.tick_params(
                 axis='both',
                 which='major',
-                top='off',
-                bottom='off',
-                left='off',
-                right='off')
+                top=False,
+                bottom=False,
+                left=False,
+                right=False)
     else:
         ax.tick_params(axis='both',
                         which='both',
-                        bottom='off',
-                        top='off',
-                        left='off',
-                        right='off',
-                        labelleft='off',
-                        labelbottom='off')
+                        bottom=False,
+                        top=False,
+                        left=False,
+                        right=False,
+                        labelleft=False,
+                        labelbottom=False)
 
     # set "global" text items to be used in all overlays
     states = np.unique(state_fields)
@@ -787,25 +787,25 @@ def spacetime_animate(data_fields, ax=None, size=20, colorbar=False, axes_label_
                 axis='both',
                 which='minor',
                 direction='out',
-                top='off',
-                right='off',
+                top=False,
+                right=False,
                 pad=8)
         ax.tick_params(
                 axis='both',
                 which='major',
-                top='off',
-                bottom='off',
-                left='off',
-                right='off')
+                top=False,
+                bottom=False,
+                left=False,
+                right=False)
     else:
         ax.tick_params(axis='both',
                         which='both',
-                        bottom='off',
-                        top='off',
-                        left='off',
-                        right='off',
-                        labelleft='off',
-                        labelbottom='off')
+                        bottom=False,
+                        top=False,
+                        left=False,
+                        right=False,
+                        labelleft=False,
+                        labelbottom=False)
 
     plt.close() # prevents initial figure from being displayed in jupyter notebook
 
@@ -817,35 +817,4 @@ def spacetime_animate(data_fields, ax=None, size=20, colorbar=False, axes_label_
 
     return anim
 
-# **** Cleaner version below doesn't work; not sure why ****
 
-# def spacetime_animate(data_fields, ax=None, size=14, y_min=0, y_max=None, x_min=0, x_max=None,
-#                       anim_kwargs={}, **diagram_kwargs):
-#     '''
-#
-#     '''
-#     t,h,w = np.shape(data_fields)
-#     if y_max is None:
-#         y_max = h
-#     if x_max is None:
-#         x_max = w
-#     H = y_max - y_min
-#     W = x_max - x_min
-#     if ax is None:
-#         fig, ax = plt.subplots(figsize = (size, (H/W)*size))
-#
-#     cropped_fields = data_fields[:, y_min:y_max, x_min:x_max]
-#     im = diagram(cropped_fields[0], ax=ax, y_min=y_min, y_max=y_max, x_min=x_min, x_max=x_max, return_pcolor=True,
-#             **diagram_kwargs)
-#
-#     plt.close() # prevents initial figure from being displayed in jupyter notebook
-#
-#     def animate(i):
-#         im.set_array(cropped_fields[i].flatten())
-#
-#     frames = t
-#     anim = animation.FuncAnimation(fig, animate, frames=frames, **anim_kwargs)
-#
-#     return anim
-
-###################################################################################################
