@@ -488,6 +488,10 @@ class LocalCausalStates(object):
     '''
 
     *** NEED TO UPDATE***
+    
+    *** Consider refactoring to give NAN state label -1, so actual state labels start at 0 ***
+    
+    *** Consider refactoring to let causal filtering go all the way to current time; e.g. no present time margin ***
 
     Object that handles the reconstruction of the local causal states for a given
     data set, and the corresponding analysis.
@@ -573,6 +577,7 @@ class LocalCausalStates(object):
         self.joint_dist = None
         self._adjusted_shape = None
         self.state_field = None
+        self._dynamics_learned = False
 
     def infer(self, field, past_params, future_params,
                             past_decay=0, future_decay=0,
@@ -984,8 +989,8 @@ class LocalCausalStates(object):
         self.state_dynamic = np.zeros(shape)
 
         # remove time margin (currently only for periodic b.c. so no space margin to remove)
-#         adjusted_T, adjusted_X = self._adjusted_shape
-        adjusted_state_field = self.state_field[self.past_depth:-self.future_depth] 
+        adjusted_T, adjusted_X = self._adjusted_shape
+        adjusted_state_field = self.state_field[self.past_depth:-self.future_depth] - 1
 
         for t in range(adjusted_T - 1):
             neighborhoods = zip(*neighborhood(adjusted_state_field[t], self.c))
@@ -1011,21 +1016,27 @@ class LocalCausalStates(object):
         '''
         assert boundary_condition == 'periodic', "Currently only works for periodic boundary conditions."
         assert self.state_field is not None, "Must call .causal_filter() first."
+        
+        if not self._dynamics_learned:
+            self._estimate_state_dynamic(boundary_condition)
+            self._dyanmics_learned = True
 
-        self._estimate_state_dynamic(boundary_condition)
-
+        field_shape = np.shape(self.state_field)
         self.state_field -= 1
         field_addition = np.zeros((time, self._adjusted_shape[1]), dtype=int) - 1
         self.state_field = np.concatenate((self.state_field, field_addition))
         state_labels = np.arange(len(self.states))
         self.unforseen_neighborhoods = 0
 
-        T = time + self.future_depth
-        anchor_T = self._adjusted_shape[0]+self.future_depth
+#         T = time + self.future_depth
+        T = time
+        anchor_T = field_shape[0]-self.future_depth - 1
         # current_adjusted_states = self.state_field[-(self.future_depth+1)]
 
         for t in range(T):
             current_adjusted_states = self.state_field[anchor_T+t]
+            current_states, current_counts = np.unique(current_adjusted_states, return_counts=True)
+            current_state_dist = current_counts / np.sum(current_counts)
             neighborhoods = zip(*neighborhood(current_adjusted_states, self.c))
             for i, n in enumerate(neighborhoods):
                 transition = self.state_dynamic[n]
@@ -1033,7 +1044,8 @@ class LocalCausalStates(object):
                 if Z == 0:
                     # raise RuntimeError("The neighborhood {} was not seen when estimating the state dynamic".format(n))
                     self.unforseen_neighborhoods += 1
-                    forecasted_state = np.random.choice(state_labels) # !!! update to use previous time spatial distribution instead
+#                     forecasted_state = np.random.choice(state_labels) # !!! update to use previous time spatial distribution instead
+                    forecasted_state = np.random.choice(current_states, p=current_state_dist)
                 else:
                     transition_probs = transition / Z # OPT: should not normalize every time; probably do in "estimate" method
                     forecasted_state = np.random.choice(state_labels, p=transition_probs)
